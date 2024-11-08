@@ -1,5 +1,6 @@
 import httpx
 import json
+import asyncio
 
 SCOREBOARD_URL = 'https://nba-prod-us-east-1-mediaops-stats.s3.amazonaws.com/NBA/liveData/scoreboard/todaysScoreboard_00.json'
 SINGLE_GAME_URL = 'https://core-api.nba.com/cp/api/v1.8/gameDetails'
@@ -64,4 +65,27 @@ def format_team_statline(team):
     'team': team_title,
     'points': team['statistics']['points'],
     'players': players
+  }
+
+async def get_stats():
+  scoreboard = await get_todays_scoreboard()
+  formatted = json.loads(scoreboard)
+
+  # print(formatted['scoreboard']['games'])
+
+  print(list(map(lambda game: game['gameId'],formatted['scoreboard']['games'])))
+
+  games_stats = await asyncio.gather(*list(map(lambda game: get_single_game_info(game['gameId']),formatted['scoreboard']['games'])))
+  formatted_game_stats = list(map(lambda stat: parse_statline(stat), games_stats))
+
+  print(formatted_game_stats)
+
+  # await get_single_game_info('0022400154')
+  return {
+    'Game Date': formatted['scoreboard']['gameDate'],
+    'League': formatted['scoreboard']['leagueName'],
+    # 'Games': formatted['scoreboard']['games'],
+    # 'GamesIds': list(map(lambda game: game['gameId'],formatted['scoreboard']['games']))
+    # 'Games Stats': games_stats,
+    'Games Stats': formatted_game_stats
   }
