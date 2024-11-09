@@ -21,7 +21,7 @@ async def get_todays_scoreboard():
   r = httpx.get(SCOREBOARD_URL)
   return r.text
 
-async def get_single_game_info(game_id):
+async def get_single_game_full_stats(game_id):
   params = {
     'leagueId': '00',
     'gameId': game_id,
@@ -37,12 +37,29 @@ async def get_single_game_info(game_id):
 def parse_statline(stat_line):
   parsed = json.loads(stat_line)['boxscore']
   return {
+    'gameId': parsed['gameId'],
     'homeTeam': format_team_statline(parsed['homeTeam']),
     'awayTeam': format_team_statline(parsed['awayTeam'])
   }
 
+def parse_scoreboard_game(game):
+  return {
+    'gameId': game['gameId'],
+    'homeTeam': parse_scoreboard_game_team(game['homeTeam']),
+    'awayTeam': parse_scoreboard_game_team(game['awayTeam'])
+  }
+
+def parse_scoreboard_game_team(team):
+  return {
+    'score': team['score'],
+    'wins': team['wins'],
+    'losses': team['losses'],
+    'teamCity': team['teamCity'],
+    'teamName': team['teamName'],
+    'teamTricode': team['teamTricode']
+  }
+
 def format_team_statline(team):
-  team_title = f'{team['teamCity']} {team['teamName']}'
   players = []
   for player in team['players']:
     if player['status'] == 'ACTIVE':
@@ -76,30 +93,32 @@ def format_team_statline(team):
         players.append(player_to_append)
 
   return {
-    'team': team_title,
-    'points': team['statistics']['points'],
+    'tricode': team['teamTricode'],
     'players': players
   }
 
 async def get_stats():
   scoreboard = await get_todays_scoreboard()
-  formatted = json.loads(scoreboard)
+  formatted_scoreboards = json.loads(scoreboard)
 
-  # print(formatted['scoreboard']['games'])
+  games = list(map(parse_scoreboard_game ,formatted_scoreboards['scoreboard']['games']))
 
-  # print(list(map(lambda game: game['gameId'],formatted['scoreboard']['games'])))
+  games_full_stats = await asyncio.gather(*list(map(lambda game: get_single_game_full_stats(game['gameId']), games)))
+  parsed_game_full_stats = list(map(parse_statline, games_full_stats))
 
-  games_stats = await asyncio.gather(*list(map(lambda game: get_single_game_info(game['gameId']),formatted['scoreboard']['games'])))
-  formatted_game_stats = list(map(lambda stat: parse_statline(stat), games_stats))
+  combined_full_stats = []
 
-  # print(formatted_game_stats)
+  for game in games:
+    game_to_merge = next((pgfs for pgfs in parsed_game_full_stats if pgfs['gameId'] == game['gameId']), {})
 
-  # await get_single_game_info('0022400154')
+    game['homeTeam']['players'] = game_to_merge['homeTeam']['players']
+    game['awayTeam']['players'] = game_to_merge['awayTeam']['players']
+    combined_full_stats.append(game)
+
   return {
-    'Game Date': formatted['scoreboard']['gameDate'],
-    'League': formatted['scoreboard']['leagueName'],
-    # 'Games': formatted['scoreboard']['games'],
-    # 'GamesIds': list(map(lambda game: game['gameId'],formatted['scoreboard']['games']))
-    'Games Stats': formatted_game_stats,
-    # 'formatted': formatted
+    'Game Date': formatted_scoreboards['scoreboard']['gameDate'],
+    'League': formatted_scoreboards['scoreboard']['leagueName'],
+    'Games Stats': combined_full_stats,
+    'formatted_scoreboards': formatted_scoreboards,
+    'games_full_stats': games_full_stats
   }
