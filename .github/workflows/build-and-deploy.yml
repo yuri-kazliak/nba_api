@@ -46,17 +46,17 @@ jobs:
           envs: IMAGE_NAME
           script: |
             # Stop running container
-            docker container stop $(echo $IMAGE_NAME)
+            docker container stop yurasick/my_basket_api:0.0.1
             # Remove old container
-            docker container rm $(echo $IMAGE_NAME)
+            docker container rm yurasick/my_basket_api:0.0.1
             # Pull a new container
-            docker image pull $(echo $IMAGE_NAME)
+            docker image pull yurasick/my_basket_api:0.0.1
             # Run a new container from a new image
             docker run -d \
             --restart always \
-            --name $(echo $IMAGE_NAME) \
+            --name yurasick/my_basket_api:0.0.1 \
             -p 8018:8000 \
-            $(echo $IMAGE_NAME)
+            yurasick/my_basket_api:0.0.1
 
 # name: CI
 
