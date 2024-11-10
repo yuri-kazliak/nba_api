@@ -7,7 +7,7 @@ on:
 
 env:
   # REGISTRY: "your-digitalocean-registry-container-url"
-  IMAGE_NAME: "yurasick/my_basket_api:0.0.1"
+  IMAGE_NAME: "jdwdafhsadgfjaksdghfkjsadhgf/my_basket_api:0.0.1"
   # IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:${{ github.sha }}
 
 jobs:
