@@ -7,7 +7,7 @@ on:
 
 env:
   # REGISTRY: "your-digitalocean-registry-container-url"
-  IMAGE_NAME: "yurasick/my_basket_api:0.0.1"
+  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1
   # IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:${{ github.sha }}
 
 jobs:
@@ -28,7 +28,7 @@ jobs:
   #       uses: docker/build-push-action@v6
   #       with:
   #         push: true
-  #         tags: ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1
+  #         tags: $IMAGE_NAME
 #WORKS!!
   deploy:
     runs-on: ubuntu-latest
@@ -49,17 +49,17 @@ jobs:
           script: |
 
             # Stop running container
-            docker container stop yurasick/my_basket_api:0.0.1
+            docker container stop $(echo $IMAGE_NAME)
             # Remove old container
-            docker container rm yurasick/my_basket_api:0.0.1
+            docker container rm $(echo $IMAGE_NAME)
             # Pull a new container
-            docker image pull yurasick/my_basket_api:0.0.1
+            docker image pull $(echo $IMAGE_NAME)
             # Run a new container from a new image
             docker run -d \
             --restart always \
-            --name yurasick/my_basket_api:0.0.1 \
+            --name my_basket_api \
             -p 8018:8000 \
-            yurasick/my_basket_api:0.0.1
+            $(echo $IMAGE_NAME)
 
 # name: CI
 
