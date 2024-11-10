@@ -6,8 +6,7 @@ on:
       - "main"
 
 env:
-  CONTAINER_NAME: "my_basket_api"
-  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/$CONTAINER_NAME:${{ github.sha }
+  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.CONTAINER_NAME }}:${{ github.sha }
 
 jobs:
   build_and_push:
@@ -41,19 +40,19 @@ jobs:
           host: ${{ vars.DO_HOST }}
           username: ${{ vars.DOCKERHUB_USERNAME }}
           key: ${{ secrets.DO_SSHKEY }}
-          envs: IMAGE_NAME, CONTAINER_NAME
+          envs: IMAGE_NAME
           script: |
 
             # Stop running container
-            docker container stop $(echo $CONTAINER_NAME)
+            docker container stop $(echo ${{ vars.CONTAINER_NAME }})
             # Remove old container
-            docker container rm -f $(echo $CONTAINER_NAME)
+            docker container rm -f $(echo ${{ vars.CONTAINER_NAME }})
             # Pull a new container
             docker image pull $(echo $IMAGE_NAME)
             # Run a new container from a new image
             docker run -d \
             --restart always \
-            --name $(echo $CONTAINER_NAME) \
+            --name $(echo ${{ vars.CONTAINER_NAME }}) \
             -p 8018:8000 \
             $(echo $IMAGE_NAME)
 
