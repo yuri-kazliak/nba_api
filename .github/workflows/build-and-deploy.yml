@@ -7,6 +7,7 @@ on:
 
 env:
   # REGISTRY: "your-digitalocean-registry-container-url"
+  CONTAINER_NAME: "nba_api"
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1
   # IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:${{ github.sha }}
 
@@ -35,8 +36,6 @@ jobs:
     # needs: build_and_push
     
     steps:
-      - name: Print
-        run:  echo $IMAGE_NAME
       - name: Checkout files    
         uses: actions/checkout@v2
       - name: Deploy to Digital Ocean droplet via SSH action
@@ -49,15 +48,15 @@ jobs:
           script: |
 
             # Stop running container
-            docker container stop $(echo $IMAGE_NAME)
+            docker container stop $(echo $CONTAINER_NAME)
             # Remove old container
-            docker container rm -f $(echo $IMAGE_NAME)
+            docker container rm -f $(echo $CONTAINER_NAME)
             # Pull a new container
             docker image pull $(echo $IMAGE_NAME)
             # Run a new container from a new image
             docker run -d \
             --restart always \
-            --name my_basket_api \
+            --name $(echo $CONTAINER_NAME) \
             -p 8018:8000 \
             $(echo $IMAGE_NAME)
 
