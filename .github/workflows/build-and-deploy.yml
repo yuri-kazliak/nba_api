@@ -44,7 +44,7 @@ jobs:
           host: ${{ vars.DO_HOST }}
           username: ${{ vars.DOCKERHUB_USERNAME }}
           key: ${{ secrets.DO_SSHKEY }}
-          envs: IMAGE_NAME
+          envs: IMAGE_NAME, CONTAINER_NAME
           script: |
 
             # Stop running container
