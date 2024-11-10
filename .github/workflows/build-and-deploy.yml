@@ -46,11 +46,11 @@ jobs:
           envs: IMAGE_NAME
           script: |
             # Stop running container
-            docker stop $(echo $IMAGE_NAME)
+            docker container stop $(echo $IMAGE_NAME)
             # Remove old container
-            docker rm $(echo $IMAGE_NAME)
+            docker container rm $(echo $IMAGE_NAME)
             # Pull a new container
-            docker pull $(echo $IMAGE_NAME)
+            docker image pull $(echo $IMAGE_NAME)
             # Run a new container from a new image
             docker run -d \
             --restart always \
