@@ -54,7 +54,7 @@ jobs:
             # Run a new container from a new image
             docker run -d \
             --restart always \
-            --name nba_api \
+            --name $(echo $IMAGE_NAME) \
             -p 8018:8000 \
             $(echo $IMAGE_NAME)
 
