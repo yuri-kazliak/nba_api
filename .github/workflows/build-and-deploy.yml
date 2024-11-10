@@ -40,7 +40,7 @@ jobs:
       - name: Checkout files    
         uses: actions/checkout@v2
       - name: Deploy to Digital Ocean droplet via SSH action
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ vars.DO_HOST }}
           username: ${{ vars.DOCKERHUB_USERNAME }}
