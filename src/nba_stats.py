@@ -74,7 +74,7 @@ def format_team_statline(team):
           'assists': 0,
           'steals': 0,
           'blocks': 0
-        }
+        }      
 
       if player['statistics']['points'] > criterias['points']:
         player_to_append['points'] = player['statistics']['points']
@@ -91,6 +91,8 @@ def format_team_statline(team):
         if not 'points' in player_to_append:
           player_to_append['points'] = player['statistics']['points']
         players.append(player_to_append)
+
+  players.sort(reverse=True, key=lambda p: p['points'])
 
   return {
     'tricode': team['teamTricode'],
