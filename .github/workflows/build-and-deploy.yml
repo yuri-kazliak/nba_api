@@ -45,6 +45,7 @@ jobs:
           key: ${{ secrets.DO_SSHKEY }}
           envs: IMAGE_NAME
           script: |
+            echo($IMAGE_NAME)
             # Stop running container
             docker container stop yurasick/my_basket_api:0.0.1
             # Remove old container
