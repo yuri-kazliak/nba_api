@@ -56,7 +56,9 @@ def parse_scoreboard_game_team(team):
     'losses': team['losses'],
     'teamCity': team['teamCity'],
     'teamName': team['teamName'],
-    'teamTricode': team['teamTricode']
+    'teamTricode': team['teamTricode'],
+    'teamId': team['teamId'],
+    'teamLogo': get_team_logo_link(team['teamId'])
   }
 
 def format_team_statline(team):
@@ -124,3 +126,6 @@ async def get_stats():
     'formatted_scoreboards': formatted_scoreboards,
     'games_full_stats': games_full_stats
   }
+
+def get_team_logo_link(team_id):
+  return f'https://cdn.nba.com/logos/nba/{team_id}/primary/L/logo.svg'
