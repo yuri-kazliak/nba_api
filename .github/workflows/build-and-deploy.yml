@@ -35,6 +35,8 @@ jobs:
     # needs: build_and_push
     
     steps:
+      - name: Print
+        run:  echo $IMAGE_NAME
       - name: Checkout files    
         uses: actions/checkout@v2
       - name: Deploy to Digital Ocean droplet via SSH action
@@ -45,7 +47,7 @@ jobs:
           key: ${{ secrets.DO_SSHKEY }}
           envs: IMAGE_NAME
           script: |
-            echo($IMAGE_NAME)
+
             # Stop running container
             docker container stop yurasick/my_basket_api:0.0.1
             # Remove old container
