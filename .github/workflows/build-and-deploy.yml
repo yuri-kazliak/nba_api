@@ -5,9 +5,9 @@ on:
     branches:
       - "main"
 
-# env:
+env:
   # REGISTRY: "your-digitalocean-registry-container-url"
-  # IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1
+  IMAGE_NAME: "yurasick/my_basket_api:0.0.1"
   # IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:${{ github.sha }}
 
 jobs:
@@ -43,20 +43,20 @@ jobs:
           host: ${{ vars.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSHKEY }}
-          # envs: IMAGE_NAME
+          envs: IMAGE_NAME
           script: |
             # Stop running container
-            docker container stop $(echo ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1)
+            docker container stop $(echo $IMAGE_NAME)
             # Remove old container
-            docker container rm $(echo ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1)
+            docker container rm $(echo $IMAGE_NAME)
             # Pull a new container
-            docker image pull $(echo ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1)
+            docker image pull $(echo $IMAGE_NAME)
             # Run a new container from a new image
             docker run -d \
             --restart always \
-            --name $(echo ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1) \
+            --name $(echo $IMAGE_NAME) \
             -p 8018:8000 \
-            $(echo ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1)
+            $(echo $IMAGE_NAME)
 
 # name: CI
 
