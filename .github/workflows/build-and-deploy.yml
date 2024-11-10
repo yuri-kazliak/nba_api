@@ -7,7 +7,7 @@ on:
 
 env:
   CONTAINER_NAME: "my_basket_api"
-  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/${{ CONTAINER_NAME }}:${{ github.sha }
+  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/$CONTAINER_NAME:${{ github.sha }
 
 jobs:
   build_and_push:
