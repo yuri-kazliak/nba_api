@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   nba_api:
+    image: yurasick/my_basket_api:0.0.1
     build: .
-    command: poetry run uvicorn src.main:app --host 0.0.0.0
     ports:
-      - 8008:8000
+      - 8018:8000
