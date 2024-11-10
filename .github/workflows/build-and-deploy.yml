@@ -5,9 +5,9 @@ on:
     branches:
       - "main"
 
-env:
+# env:
   # REGISTRY: "your-digitalocean-registry-container-url"
-  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1
+  # IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1
   # IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:${{ github.sha }}
 
 jobs:
@@ -28,7 +28,7 @@ jobs:
   #       uses: docker/build-push-action@v6
   #       with:
   #         push: true
-  #         tags: $IMAGE_NAME
+  #         tags: ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1
 #WORKS!!
   deploy:
     runs-on: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
           host: ${{ vars.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSHKEY }}
-          # envs: IMAGE_NAME
+          envs: IMAGE_NAME = ${{ vars.DOCKERHUB_USERNAME }}/my_basket_api:0.0.1
           script: |
             # Stop running container
             docker container stop $(echo $IMAGE_NAME)
