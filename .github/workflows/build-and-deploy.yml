@@ -26,7 +26,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: echo $IMAGE_NAME
+          tags: ${{ env.IMAGE_NAME }}
   deploy:
     runs-on: ubuntu-latest
     needs: build_and_push
