@@ -51,7 +51,7 @@ jobs:
             # Stop running container
             docker container stop $(echo $IMAGE_NAME)
             # Remove old container
-            docker container rm $(echo $IMAGE_NAME)
+            docker container rm -f $(echo $IMAGE_NAME)
             # Pull a new container
             docker image pull $(echo $IMAGE_NAME)
             # Run a new container from a new image
