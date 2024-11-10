@@ -43,7 +43,7 @@ jobs:
           host: ${{ vars.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSHKEY }}
-          envs: IMAGE_NAME
+          # envs: IMAGE_NAME
           script: |
             # Stop running container
             docker container stop $(echo $IMAGE_NAME)
