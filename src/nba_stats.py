@@ -123,8 +123,8 @@ async def get_stats():
     'Game Date': formatted_scoreboards['scoreboard']['gameDate'],
     'League': formatted_scoreboards['scoreboard']['leagueName'],
     'Games Stats': combined_full_stats,
-    'formatted_scoreboards': formatted_scoreboards,
-    'games_full_stats': games_full_stats
+    # 'formatted_scoreboards': formatted_scoreboards,
+    # 'games_full_stats': games_full_stats
   }
 
 def get_team_logo_link(team_id):
