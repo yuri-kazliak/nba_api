@@ -8,7 +8,7 @@ env:
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.CONTAINER_NAME }}:${{ github.ref_name }}
 
 jobs:
-  build_and_push:
+  dh_push:
     uses: yuri-kazliak/automation/.github/workflows/docker-hub-push.yml@main
     with:
       image_name: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.CONTAINER_NAME }}:${{ github.ref_name }}
@@ -31,32 +31,41 @@ jobs:
     #     with:
     #       push: true
     #       tags: ${{ env.IMAGE_NAME }}
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build_and_push
-    if: ${{ github.ref_name }}
+  do_deploy:
+    uses: yuri-kazliak/automation/.github/workflows/digital-ocean-deploy.yml@main
+    with:
+      image_name: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.CONTAINER_NAME }}:${{ github.ref_name }}
+      docker_container_name: ${{ vars.CONTAINER_NAME }}
+      do_host: ${{ vars.DO_HOST }}
+      do_username: ${{ vars.DOCKERHUB_USERNAME }}
+    secrets:
+      do_ssh_key: ${{ secrets.DO_SSHKEY }}
 
-    steps:
-      - name: Checkout files
-        uses: actions/checkout@v2
-      - name: Deploy to Digital Ocean droplet via SSH action
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ vars.DO_HOST }}
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          key: ${{ secrets.DO_SSHKEY }}
-          envs: IMAGE_NAME
-          script: |
+    # runs-on: ubuntu-latest
+    # needs: build_and_push
+    # if: ${{ github.ref_name }}
 
-            # Stop running container
-            docker container stop $(echo ${{ vars.CONTAINER_NAME }})
-            # Remove old container
-            docker container rm -f $(echo ${{ vars.CONTAINER_NAME }})
-            # Pull a new container
-            docker image pull $(echo $IMAGE_NAME)
-            # Run a new container from a new image
-            docker run -d \
-            --restart always \
-            --name $(echo ${{ vars.CONTAINER_NAME }}) \
-            -p 8018:8000 \
-            $(echo $IMAGE_NAME)
+    # steps:
+    #   - name: Checkout files
+    #     uses: actions/checkout@v2
+    #   - name: Deploy to Digital Ocean droplet via SSH action
+    #     uses: appleboy/ssh-action@v1.0.3
+    #     with:
+    #       host: ${{ vars.DO_HOST }}
+    #       username: ${{ vars.DOCKERHUB_USERNAME }}
+    #       key: ${{ secrets.DO_SSHKEY }}
+    #       envs: IMAGE_NAME
+    #       script: |
+
+    #         # Stop running container
+    #         docker container stop $(echo ${{ vars.CONTAINER_NAME }})
+    #         # Remove old container
+    #         docker container rm -f $(echo ${{ vars.CONTAINER_NAME }})
+    #         # Pull a new container
+    #         docker image pull $(echo $IMAGE_NAME)
+    #         # Run a new container from a new image
+    #         docker run -d \
+    #         --restart always \
+    #         --name $(echo ${{ vars.CONTAINER_NAME }}) \
+    #         -p 8018:8000 \
+    #         $(echo $IMAGE_NAME)
