@@ -2,7 +2,6 @@ version: "3.9"
 
 services:
   nba_api:
-    image: yurasick/my_basket_api:0.0.1
     build: .
     ports:
       - 8018:8000

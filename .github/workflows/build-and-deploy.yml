@@ -24,7 +24,7 @@ jobs:
       docker_container_name: ${{ vars.CONTAINER_NAME }}
       do_host: ${{ vars.DO_HOST }}
       do_username: ${{ vars.DOCKERHUB_USERNAME }}
-      docker_port_mapping: "8018"
+      docker_port_mapping: 8018
     secrets:
       do_ssh_key: ${{ secrets.DO_SSHKEY }}
 
