@@ -32,6 +32,7 @@ jobs:
     #       push: true
     #       tags: ${{ env.IMAGE_NAME }}
   do_deploy:
+    needs: dh_push
     uses: yuri-kazliak/automation/.github/workflows/digital-ocean-deploy.yml@main
     with:
       image_name: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.CONTAINER_NAME }}:${{ github.ref_name }}
