@@ -24,37 +24,6 @@ jobs:
       docker_container_name: ${{ vars.CONTAINER_NAME }}
       do_host: ${{ vars.DO_HOST }}
       do_username: ${{ vars.DOCKERHUB_USERNAME }}
-      use_docker_port_mapping: true
+      docker_port_mapping: 8018
     secrets:
       do_ssh_key: ${{ secrets.DO_SSHKEY }}
-
-    # runs-on: ubuntu-latest
-    # needs: build_and_push
-    # if: ${{ github.ref_name }}
-
-    # steps:
-    #   - name: Checkout files
-    #     uses: actions/checkout@v2
-    #   - name: Deploy to Digital Ocean droplet via SSH action
-    #     uses: appleboy/ssh-action@v1.0.3
-    #     with:
-    #       host: ${{ vars.DO_HOST }}
-    #       username: ${{ vars.DOCKERHUB_USERNAME }}
-    #       key: ${{ secrets.DO_SSHKEY }}
-    #       envs: IMAGE_NAME
-    #       script: |
-
-    #         # Stop running container
-    #         docker container stop $(echo ${{ vars.CONTAINER_NAME }})
-    #         # Remove old container
-    #         docker container rm -f $(echo ${{ vars.CONTAINER_NAME }})
-    #         # Remove old images
-    #         docker images -a | grep "$(echo ${{ vars.CONTAINER_NAME }})" | awk '{print $1":"$2}' | xargs docker rmi
-    #         # Pull a new container
-    #         docker image pull $(echo $IMAGE_NAME)
-    #         # Run a new container from a new image
-    #         docker run -d \
-    #         --restart always \
-    #         --name $(echo ${{ vars.CONTAINER_NAME }}) \
-    #         -p 8018:8000 \
-    #         $(echo $IMAGE_NAME)
