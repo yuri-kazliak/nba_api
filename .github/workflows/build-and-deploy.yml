@@ -1,4 +1,4 @@
-name: ci
+name: NBA Stats API CI/CD
 
 on:
   release:
@@ -16,21 +16,6 @@ jobs:
     secrets:
       dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    # runs-on: ubuntu-latest
-    # if: ${{ github.ref_name }}
-    # steps:
-    #   - name: Login to Docker Hub
-    #     uses: docker/login-action@v3
-    #     with:
-    #       username: ${{ vars.DOCKERHUB_USERNAME }}
-    #       password: ${{ secrets.DOCKERHUB_TOKEN }}
-    #   - name: Set up Docker Buildx
-    #     uses: docker/setup-buildx-action@v3
-    #   - name: Build and push
-    #     uses: docker/build-push-action@v6
-    #     with:
-    #       push: true
-    #       tags: ${{ env.IMAGE_NAME }}
   do-deploy:
     needs: dockerhub-push
     uses: yuri-kazliak/automation/.github/workflows/digital-ocean-deploy.yml@main
@@ -39,6 +24,7 @@ jobs:
       docker_container_name: ${{ vars.CONTAINER_NAME }}
       do_host: ${{ vars.DO_HOST }}
       do_username: ${{ vars.DOCKERHUB_USERNAME }}
+      docker_port_mapping: "8018"
     secrets:
       do_ssh_key: ${{ secrets.DO_SSHKEY }}
 
@@ -62,6 +48,8 @@ jobs:
     #         docker container stop $(echo ${{ vars.CONTAINER_NAME }})
     #         # Remove old container
     #         docker container rm -f $(echo ${{ vars.CONTAINER_NAME }})
+    #         # Remove old images
+    #         docker images -a | grep "$(echo ${{ vars.CONTAINER_NAME }})" | awk '{print $1":"$2}' | xargs docker rmi
     #         # Pull a new container
     #         docker image pull $(echo $IMAGE_NAME)
     #         # Run a new container from a new image
