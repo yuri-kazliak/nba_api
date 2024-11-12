@@ -35,7 +35,7 @@ async def get_single_game_full_stats(game_id: str):
   return r.text
 
 
-async def get_season_player_stats():
+async def get_all_players_season_stats():
   params = {
     'LeagueID': '00',
     'PerMode': 'PerGame',

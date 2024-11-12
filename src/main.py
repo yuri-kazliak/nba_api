@@ -15,22 +15,27 @@ sentry_sdk.init(
 
 app_state = {}
 
-async def update_app_state() -> None:
+async def update_app_state_boxscore() -> None:
     app_state['todays_boxscore'] = await get_stats()
+
+async def update_app_state_players_stats() -> None:
+    app_state['all_players_stats'] = await get_players_stats()
 
 def clear_app_state() -> None:
     app_state.clear()
 
-async def create_interval(interval: int) -> None:
+async def create_interval(func, interval: int) -> None:
     while True:
-        asyncio.create_task(update_app_state())
+        asyncio.create_task(func())
         await asyncio.sleep(interval)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    task = asyncio.create_task(create_interval(60 * 30))
+    boxscore_task = asyncio.create_task(create_interval(update_app_state_boxscore, 60 * 30)) # Every 30 minutes
+    all_stats_task = asyncio.create_task(create_interval(update_app_state_players_stats, 60 * 60 * 12)) # Every 12 Hours
     yield
-    task.cancel()
+    boxscore_task.cancel()
+    all_stats_task.cancel()
     clear_app_state()
 
 app = FastAPI(lifespan=lifespan)
@@ -39,7 +44,11 @@ app = FastAPI(lifespan=lifespan)
 async def root():
     return app_state['todays_boxscore']
 
-@app.get("/player-stats")
-async def player_stats():
-    return await get_players_stats()
-    # return app_state['all_stats']
+@app.get("/players-stats")
+async def players_stats():
+    return app_state['all_players_stats']
+
+# @app.get("/players-stats/{player_name}")
+# async def player_stat_by_name(player_name):
+#     return await get_players_stats()
+#     # return app_state['all_stats']

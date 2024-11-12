@@ -83,13 +83,11 @@ def format_team_statline(team):
     'players': players
   }
 
-def parse_league_leaders_stats(league_leaders_json):
+def parse_players_season_stats(league_leaders_json):
   if "resultSet" in league_leaders_json:
     categories = league_leaders_json["resultSet"]["headers"] # should be in format ["PLAYER_ID","RANK","PLAYER","TEAM_ID","TEAM","GP","MIN","FGM","FGA","FG_PCT","FG3M","FG3A","FG3_PCT","FTM","FTA","FT_PCT","OREB","DREB","REB","AST","STL","BLK","TOV","PTS","EFF"]
 
     all_players_stats = league_leaders_json["resultSet"]["rowSet"]
-
-    logger.debug(len(all_players_stats))
 
     return {
       'categories': categories,

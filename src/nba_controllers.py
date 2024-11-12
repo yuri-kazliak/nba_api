@@ -2,8 +2,8 @@ import json
 import asyncio
 from loguru import logger
 
-from .nba_api import get_season_player_stats, get_single_game_full_stats, get_todays_scoreboard
-from .nba_models import parse_league_leaders_stats, parse_scoreboard_game, parse_single_game_statline
+from .nba_api import get_all_players_season_stats, get_single_game_full_stats, get_todays_scoreboard
+from .nba_models import parse_players_season_stats, parse_scoreboard_game, parse_single_game_statline
 
 async def get_stats():
   try:
@@ -38,9 +38,9 @@ async def get_stats():
 
 async def get_players_stats():
   try:
-    players_stats = await get_season_player_stats()
+    players_stats = await get_all_players_season_stats()
 
-    return parse_league_leaders_stats(json.loads(players_stats))
+    return parse_players_season_stats(json.loads(players_stats))
   except Exception as err:
     logger.exception(err)
     return None
