@@ -19,6 +19,9 @@ async def get_stats():
     try:
         scoreboard = await get_todays_scoreboard()
 
+        if "<HTML>" in scoreboard:
+            return None
+
         formatted_scoreboards = parse_to_json(scoreboard)
 
         games = list(

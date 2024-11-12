@@ -53,11 +53,15 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 async def root():
+    if not "todays_boxscore" in app_state or not app_state["todays_boxscore"]:
+        await update_app_state_boxscore()
     return app_state["todays_boxscore"]
 
 
 @app.get("/players-stats")
 async def players_stats():
+    if not "all_players_stats" in app_state or not app_state["all_players_stats"]:
+        await update_app_state_players_stats()
     return app_state["all_players_stats"]
 
 
