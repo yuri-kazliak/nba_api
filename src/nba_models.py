@@ -1,14 +1,4 @@
-import httpx
 import json
-import asyncio
-from loguru import logger
-from enum import Enum
-
-SCOREBOARD_URL = 'https://nba-prod-us-east-1-mediaops-stats.s3.amazonaws.com/NBA/liveData/scoreboard/todaysScoreboard_00.json'
-SINGLE_GAME_URL = 'https://core-api.nba.com/cp/api/v1.8/gameDetails'
-
-class NBA_GAME_STATUS(Enum):
-  Final = 3
 
 statistic_minumum_criteria = {
   'points': 9,
@@ -22,24 +12,7 @@ players_to_watch = [
   "V. Wembanyama"
 ]
 
-async def get_todays_scoreboard():
-  r = httpx.get(SCOREBOARD_URL)
-  return r.text
-
-async def get_single_game_full_stats(game_id):
-  params = {
-    'leagueId': '00',
-    'gameId': game_id,
-    'tabs': 'all',
-    'platform': 'web'
-  }
-  headers = {
-    "ocp-apim-subscription-key":"747fa6900c6c4e89a58b81b72f36eb96"
-  }
-  r = httpx.get(SINGLE_GAME_URL, params=params, headers=headers)
-  return r.text
-
-def parse_statline(stat_line):
+def parse_single_game_statline(stat_line):
   parsed = json.loads(stat_line)['boxscore']
   return {
     'gameId': parsed['gameId'],
@@ -65,6 +38,9 @@ def parse_scoreboard_game_team(team):
     'teamId': team['teamId'],
     'teamLogo': get_team_logo_link(team['teamId'])
   }
+
+def get_team_logo_link(team_id: str) -> str:
+  return f'https://cdn.nba.com/logos/nba/{team_id}/primary/L/logo.svg'
 
 def format_team_statline(team):
   players = []
@@ -105,38 +81,3 @@ def format_team_statline(team):
     'tricode': team['teamTricode'],
     'players': players
   }
-
-async def get_stats():
-  try:
-    logger.debug('get_stats has been called')
-    scoreboard = await get_todays_scoreboard()
-    
-    formatted_scoreboards = json.loads(scoreboard)
-
-    games = list(map(parse_scoreboard_game ,formatted_scoreboards['scoreboard']['games']))
-
-    games_full_stats = await asyncio.gather(*list(map(lambda game: get_single_game_full_stats(game['gameId']), games)))
-    parsed_game_full_stats = list(map(parse_statline, games_full_stats))
-
-    combined_full_stats = []
-
-    for game in games:
-      game_to_merge = next((pgfs for pgfs in parsed_game_full_stats if pgfs['gameId'] == game['gameId']), {})
-
-      game['homeTeam']['players'] = game_to_merge['homeTeam']['players']
-      game['awayTeam']['players'] = game_to_merge['awayTeam']['players']
-      combined_full_stats.append(game)
-
-    return {
-      'Game Date': formatted_scoreboards['scoreboard']['gameDate'],
-      'League': formatted_scoreboards['scoreboard']['leagueName'],
-      'Games Stats': combined_full_stats,
-      # 'formatted_scoreboards': formatted_scoreboards,
-      # 'games_full_stats': games_full_stats
-    }
-  except Exception as err:
-    logger.exception(err)
-    return None
-
-def get_team_logo_link(team_id):
-  return f'https://cdn.nba.com/logos/nba/{team_id}/primary/L/logo.svg'
