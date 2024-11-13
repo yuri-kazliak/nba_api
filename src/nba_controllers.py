@@ -53,7 +53,11 @@ async def get_stats():
                 (
                     pgfs
                     for pgfs in parsed_game_full_stats
-                    if pgfs["gameId"] == game["gameId"]
+                    if pgfs
+                    and game
+                    and "gameId" in pgfs
+                    and "gameId" in game
+                    and pgfs["gameId"] == game["gameId"]
                 ),
                 {},
             )

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import sentry_sdk
 from contextlib import asynccontextmanager
 import asyncio
+from datetime import datetime, timedelta
 
 from .nba_controllers import get_stats, get_players_stats
 
@@ -18,33 +19,22 @@ app_state = {}
 
 async def update_app_state_boxscore() -> None:
     app_state["todays_boxscore"] = await get_stats()
+    app_state["todays_boxscore_datetime"] = datetime.now()
 
 
 async def update_app_state_players_stats() -> None:
     app_state["all_players_stats"] = await get_players_stats()
+    app_state["all_players_stats_datetime"] = datetime.now()
 
 
 def clear_app_state() -> None:
     app_state.clear()
 
 
-async def create_interval(func, interval: int) -> None:
-    while True:
-        asyncio.create_task(func())
-        await asyncio.sleep(interval)
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    boxscore_task = asyncio.create_task(
-        create_interval(update_app_state_boxscore, 60 * 30)
-    )  # Every 30 minutes
-    all_stats_task = asyncio.create_task(
-        create_interval(update_app_state_players_stats, 60 * 60 * 12)
-    )  # Every 12 Hours
+    asyncio.gather(update_app_state_boxscore(), update_app_state_players_stats())
     yield
-    boxscore_task.cancel()
-    all_stats_task.cancel()
     clear_app_state()
 
 
@@ -55,6 +45,10 @@ app = FastAPI(lifespan=lifespan)
 async def root():
     if not "todays_boxscore" in app_state or not app_state["todays_boxscore"]:
         await update_app_state_boxscore()
+    else:
+        if datetime.now() > app_state["todays_boxscore_datetime"] + timedelta(hours=2):
+            asyncio.gather(update_app_state_boxscore())
+
     return app_state["todays_boxscore"]
 
 
@@ -62,6 +56,12 @@ async def root():
 async def players_stats():
     if not "all_players_stats" in app_state or not app_state["all_players_stats"]:
         await update_app_state_players_stats()
+    else:
+        if datetime.now() > app_state["all_players_stats_datetime"] + timedelta(
+            hours=12
+        ):
+            asyncio.gather(update_app_state_players_stats())
+
     return app_state["all_players_stats"]
 
 

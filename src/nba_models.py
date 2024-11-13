@@ -108,6 +108,10 @@ def parse_players_season_stats(league_leaders_json):
 
 
 def parse_to_json(value):
+    if not value or "<HTML>" in value:
+        logger.exception(f"Wrong input for parse_to_json method: {value}")
+        return None
+
     try:
         return json.loads(value)
     except Exception as err:
