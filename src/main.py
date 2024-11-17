@@ -46,7 +46,9 @@ async def root():
     if not "todays_boxscore" in app_state or not app_state["todays_boxscore"]:
         await update_app_state_boxscore()
     else:
-        if datetime.now() > app_state["todays_boxscore_datetime"] + timedelta(hours=1):
+        if datetime.now() > app_state["todays_boxscore_datetime"] + timedelta(
+            minutes=15
+        ):
             asyncio.gather(update_app_state_boxscore())
 
     return app_state["todays_boxscore"]
