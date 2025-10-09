@@ -8,7 +8,34 @@ env:
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.CONTAINER_NAME }}:${{ github.ref_name }}
 
 jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        run: pipx install "poetry==1.8.3"
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi
+
+      - name: Run Ruff
+        run: poetry run ruff check src tests
+
+      - name: Run MyPy
+        run: poetry run mypy src tests
+
+      - name: Run Pytest
+        run: poetry run pytest
+
   dockerhub-push:
+    needs: tests
     uses: yuri-kazliak/automation/.github/workflows/docker-hub-push.yml@main
     with:
       image_name: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.CONTAINER_NAME }}:${{ github.ref_name }}
