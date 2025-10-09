@@ -134,3 +134,22 @@ async def test_players_stats_schedules_when_stale(
     await asyncio.sleep(0)
 
     assert scheduled[0] == "scheduled"
+
+
+@pytest.mark.asyncio
+async def test_schedule_full_refresh(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    async def fake_refresh_boxscore() -> None:
+        calls.append("boxscore")
+
+    async def fake_refresh_players() -> None:
+        calls.append("players")
+
+    monkeypatch.setattr(state, "refresh_boxscore", fake_refresh_boxscore)
+    monkeypatch.setattr(state, "refresh_players_stats", fake_refresh_players)
+
+    state.schedule_full_refresh()
+    await asyncio.sleep(0)
+
+    assert calls == ["boxscore", "players"]

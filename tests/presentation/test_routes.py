@@ -74,3 +74,8 @@ def test_refresh_endpoints_schedule_state_update(app_client: TestClient) -> None
     resp_players = app_client.post("/players-stats/refresh")
     assert resp_players.status_code == 200
     assert resp_players.json() == "State has been refreshed!"
+
+
+def test_missing_routes_return_404(app_client: TestClient) -> None:
+    response = app_client.get("/unknown")
+    assert response.status_code == 404

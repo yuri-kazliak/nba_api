@@ -16,6 +16,7 @@ def test_parse_to_json_returns_dict() -> None:
 def test_parse_to_json_handles_invalid_input() -> None:
     assert parsers.parse_to_json("<HTML>Error") is None
     assert parsers.parse_to_json("not-json") is None
+    assert parsers.parse_to_json(None) is None
 
 
 def test_parse_single_game_statline_formats_players() -> None:

@@ -117,3 +117,48 @@ async def test_perform_get_retries_on_http_error(
     assert cached_entry is not None
     _, cached_text = cached_entry
     assert cached_text == "recovered-data"
+
+
+@pytest.mark.asyncio
+async def test_perform_get_raises_after_retries(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def failing_sleep(delay: float) -> None:
+        pass
+
+    monkeypatch.setattr(http_client.asyncio, "sleep", failing_sleep)
+    http_client._client = MockAsyncClient([DummyResponse("", error=httpx.HTTPError("fail"))])  # type: ignore[assignment]
+
+    with pytest.raises(httpx.HTTPError):
+        await http_client.perform_get("https://example.com/fail", retries=1)
+
+
+@pytest.mark.asyncio
+async def test_perform_get_raises_runtime_error_when_no_exception() -> None:
+    class BrokenClient(MockAsyncClient):
+        async def get(
+            self,
+            url: str,
+            params: Dict[str, Any] | None = None,
+            headers: Dict[str, str] | None = None,
+        ) -> DummyResponse:
+            raise RuntimeError("unexpected")
+
+    http_client._client = BrokenClient([])  # type: ignore[assignment]
+
+    with pytest.raises(RuntimeError, match="unexpected"):
+        await http_client.perform_get("https://example.com/broken", retries=1)
+
+
+def test_init_and_close_http_client() -> None:
+    assert http_client._client is None
+
+    http_client._cache.clear()
+
+    async def runner() -> None:
+        await http_client.init_http_client()
+        assert http_client._client is not None
+        await http_client.close_http_client()
+        assert http_client._client is None
+
+    http_client.asyncio.run(runner())

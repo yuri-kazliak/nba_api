@@ -62,3 +62,29 @@ async def test_get_players_stats_handles_parsing_failure(
 
     stats = await players.get_players_stats()
     assert stats is None
+
+
+@pytest.mark.asyncio
+async def test_get_players_stats_logs_exception(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_get_all_players_season_stats() -> str:
+        raise RuntimeError("boom")
+
+    captured = []
+
+    def fake_logger_exception(err: Exception) -> None:
+        captured.append(str(err))
+
+    monkeypatch.setattr(
+        "nba_api.services.nba_client.get_all_players_season_stats",
+        fake_get_all_players_season_stats,
+    )
+    monkeypatch.setattr(
+        "nba_api.use_cases.players.logger.exception", fake_logger_exception
+    )
+
+    stats = await players.get_players_stats()
+
+    assert stats is None
+    assert captured == ["boom"]
