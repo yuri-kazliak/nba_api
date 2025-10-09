@@ -14,6 +14,12 @@ docker-compose.yml
 Dockerfile
 .docker
 .dockerignore
+# Development and CI artifacts should not be copied into the image
+tests/
+.github/
+docs/
+.coverage
+coverage.xml
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
