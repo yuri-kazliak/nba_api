@@ -154,7 +154,7 @@ async def test_get_stats_handles_exception_from_gather(
             [
                 {
                     "gameId": "001",
-                        "gameStatus": NBA_GAME_STATUS.LIVE.value,
+                    "gameStatus": NBA_GAME_STATUS.LIVE.value,
                     "homeTeam": {
                         "teamTricode": "HOM",
                         "teamId": "001",
@@ -242,6 +242,7 @@ async def test_get_stats_handles_null_statlines(
     monkeypatch.setattr(
         "nba_api.services.nba_client.get_todays_scoreboard", fake_get_todays_scoreboard
     )
+
     async def fake_get_single_game_full_stats(game_id: str) -> str:
         return json.dumps({})
 
