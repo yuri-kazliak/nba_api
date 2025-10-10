@@ -81,9 +81,7 @@ async def test_ensure_boxscore_fresh_schedules_when_stale(
     monkeypatch.setattr(state.asyncio, "create_task", fake_create_task)
     monkeypatch.setattr(state, "refresh_boxscore", fake_refresh)
 
-    state.set_todays_boxscore(
-        {"foo": "bar"}, timestamp=datetime.now() - timedelta(minutes=16)
-    )
+    state.set_todays_boxscore({"foo": "bar"}, timestamp=datetime.now() - timedelta(minutes=16))
 
     await state.ensure_boxscore_fresh()
     await asyncio.sleep(0)
@@ -126,9 +124,7 @@ async def test_players_stats_schedules_when_stale(
     monkeypatch.setattr(state.asyncio, "create_task", fake_create_task)
     monkeypatch.setattr(state, "refresh_players_stats", fake_refresh)
 
-    state.set_all_players_stats(
-        {"foo": "bar"}, timestamp=datetime.now() - timedelta(hours=2)
-    )
+    state.set_all_players_stats({"foo": "bar"}, timestamp=datetime.now() - timedelta(hours=2))
 
     await state.ensure_players_stats_fresh()
     await asyncio.sleep(0)

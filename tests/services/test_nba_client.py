@@ -75,4 +75,3 @@ async def test_get_specific_gameday_stats(monkeypatch: pytest.MonkeyPatch) -> No
 
     assert result == "gameday"
     assert calls["kwargs"]["params"]["gamedate"] == "11/10/2024"
-

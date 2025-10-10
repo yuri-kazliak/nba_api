@@ -66,8 +66,7 @@ async def get_stats() -> Optional[Dict[str, Any]]:
         ]
 
         gatherers = [
-            nba_client.get_single_game_full_stats(game["gameId"])
-            for game in filtered_games
+            nba_client.get_single_game_full_stats(game["gameId"]) for game in filtered_games
         ]
         games_full_stats = await asyncio.gather(*gatherers, return_exceptions=True)
         parsed_game_full_stats: List[Optional[ParsedStatline]] = []
@@ -78,9 +77,7 @@ async def get_stats() -> Optional[Dict[str, Any]]:
                 continue
 
             parsed_game_full_stats.append(
-                parse_single_game_statline(
-                    stat_line if isinstance(stat_line, str) else None
-                )
+                parse_single_game_statline(stat_line if isinstance(stat_line, str) else None)
             )
 
         combined_full_stats: List[Dict[str, Any]] = []

@@ -20,20 +20,17 @@ def test_create_app_registers_routes(monkeypatch: pytest.MonkeyPatch) -> None:
     async def fake_close_http_client() -> None:
         close_calls.append("close")
 
-    monkeypatch.setattr(
-        "nba_api.presentation.app.init_http_client", fake_init_http_client
-    )
+    monkeypatch.setattr("nba_api.presentation.app.init_http_client", fake_init_http_client)
 
-    monkeypatch.setattr(
-        "nba_api.presentation.app.close_http_client", fake_close_http_client
-    )
+    monkeypatch.setattr("nba_api.presentation.app.close_http_client", fake_close_http_client)
 
     monkeypatch.setattr("nba_api.presentation.app.state.clear_state", lambda: None)
 
     created_app = app_module.create_app()
 
     assert isinstance(created_app, FastAPI)
-    routes = {route.path for route in created_app.routes}
+    routes = {getattr(route, "path", None) for route in created_app.routes}
+    routes.discard(None)
     assert "/players-stats/" in routes
     assert "/refresh" in routes or "/" in routes
 
@@ -53,12 +50,8 @@ async def test_lifespan_calls_init_and_close(monkeypatch: pytest.MonkeyPatch) ->
     def fake_clear_state() -> None:
         cleared.append(True)
 
-    monkeypatch.setattr(
-        "nba_api.presentation.app.init_http_client", fake_init_http_client
-    )
-    monkeypatch.setattr(
-        "nba_api.presentation.app.close_http_client", fake_close_http_client
-    )
+    monkeypatch.setattr("nba_api.presentation.app.init_http_client", fake_init_http_client)
+    monkeypatch.setattr("nba_api.presentation.app.close_http_client", fake_close_http_client)
     monkeypatch.setattr("nba_api.presentation.app.state.clear_state", fake_clear_state)
 
     test_app = app_module.create_app()
@@ -68,4 +61,3 @@ async def test_lifespan_calls_init_and_close(monkeypatch: pytest.MonkeyPatch) ->
 
     assert close_called == [True]
     assert cleared == [True]
-

@@ -16,9 +16,7 @@ async def get_players_stats() -> Optional[Dict[str, Any]]:
             return None
 
         players_stats_json = parse_to_json(players_stats)
-        parsed_stats: Optional[Dict[str, Any]] = parse_players_season_stats(
-            players_stats_json
-        )
+        parsed_stats: Optional[Dict[str, Any]] = parse_players_season_stats(players_stats_json)
         return parsed_stats
     except Exception as err:  # noqa: BLE001
         logger.exception(err)
