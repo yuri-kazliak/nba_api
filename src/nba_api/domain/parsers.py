@@ -1,5 +1,7 @@
 """Parsing helpers for transforming NBA API payloads."""
 
+from __future__ import annotations
+
 import json
 from typing import Any, Dict, List, Optional
 
@@ -63,6 +65,16 @@ def get_team_logo_link(team_id: str) -> str:
 
 def format_team_statline(team: Dict[str, Any]) -> TeamStatline:
     players: List[PlayerStatline] = []
+    formatted_team: TeamStatline = {
+        "tricode": team["teamTricode"],
+        "players": players,
+    }
+
+    team_id = team.get("teamId")
+    if team_id:
+        formatted_team["teamId"] = team_id
+        formatted_team["teamLogo"] = get_team_logo_link(team_id)
+
     for player in team["players"]:
         if player.get("status") != "ACTIVE":
             continue
@@ -106,7 +118,7 @@ def format_team_statline(team: Dict[str, Any]) -> TeamStatline:
 
     players.sort(reverse=True, key=lambda player: player.get("points", 0))
 
-    return {"tricode": team["teamTricode"], "players": players}
+    return formatted_team
 
 
 def parse_players_season_stats(
