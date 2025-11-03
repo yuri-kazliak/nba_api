@@ -40,7 +40,7 @@ async def get_all_players_season_stats() -> str:
         "LeagueID": "00",
         "PerMode": "PerGame",
         "Scope": "S",
-        "Season": "2024-25",
+        "Season": "2025-26",
         "SeasonType": "Regular Season",
         "StatCategory": "REB",
     }
