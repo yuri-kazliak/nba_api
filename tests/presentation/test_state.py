@@ -9,6 +9,7 @@ from typing import Any, Awaitable, Coroutine, Generator, cast
 import pytest
 
 from nba_api.presentation import state
+from nba_api.domain.enums import NBA_GAME_STATUS
 
 
 @pytest.fixture(autouse=True)
@@ -82,6 +83,57 @@ async def test_ensure_boxscore_fresh_schedules_when_stale(
     monkeypatch.setattr(state, "refresh_boxscore", fake_refresh)
 
     state.set_todays_boxscore({"foo": "bar"}, timestamp=datetime.now() - timedelta(minutes=16))
+
+    await state.ensure_boxscore_fresh()
+    await asyncio.sleep(0)
+
+    assert scheduled[0] == "scheduled"
+
+
+@pytest.mark.asyncio
+async def test_ensure_boxscore_fresh_refreshes_immediately_for_live_games(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    async def fake_refresh() -> None:
+        calls.append("refresh")
+
+    monkeypatch.setattr(state, "refresh_boxscore", fake_refresh)
+
+    state.set_todays_boxscore(
+        {"Games Stats": [{"gameStatus": NBA_GAME_STATUS.LIVE.value}]},
+        timestamp=datetime.now(),
+    )
+
+    await state.ensure_boxscore_fresh()
+
+    assert calls == ["refresh"]
+
+
+@pytest.mark.asyncio
+async def test_ensure_boxscore_fresh_uses_final_game_interval(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scheduled: list[str] = []
+
+    async def fake_refresh() -> None:
+        scheduled.append("refresh")
+
+    original_create_task = asyncio.create_task
+
+    def fake_create_task(coro: Awaitable[Any]) -> asyncio.Task[Any]:
+        scheduled.append("scheduled")
+        coroutine = cast(Coroutine[Any, Any, Any], coro)
+        return original_create_task(coroutine)
+
+    monkeypatch.setattr(state.asyncio, "create_task", fake_create_task)
+    monkeypatch.setattr(state, "refresh_boxscore", fake_refresh)
+
+    state.set_todays_boxscore(
+        {"Games Stats": [{"gameStatus": NBA_GAME_STATUS.FINAL.value}]},
+        timestamp=datetime.now() - timedelta(minutes=61),
+    )
 
     await state.ensure_boxscore_fresh()
     await asyncio.sleep(0)
