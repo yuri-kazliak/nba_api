@@ -8,8 +8,8 @@ from typing import Any, Awaitable, Coroutine, Generator, cast
 
 import pytest
 
-from nba_api.presentation import state
 from nba_api.domain.enums import NBA_GAME_STATUS
+from nba_api.presentation import state
 
 
 @pytest.fixture(autouse=True)

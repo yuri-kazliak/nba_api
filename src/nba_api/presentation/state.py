@@ -3,11 +3,12 @@
 import asyncio
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
+
 from loguru import logger
 
+from ..domain.enums import NBA_GAME_STATUS
 from ..use_cases import players as players_use_case
 from ..use_cases import scoreboard as scoreboard_use_case
-from ..domain.enums import NBA_GAME_STATUS
 
 StateDict = Dict[str, Any]
 
