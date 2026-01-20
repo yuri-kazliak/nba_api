@@ -20,7 +20,7 @@ STATISTIC_MINIMUM_CRITERIA: StatisticCriteria = {
     "blocks": 2,
 }
 
-PLAYERS_TO_WATCH: List[str] = ["V. Wembanyama", "C. Flagg"]
+PLAYERS_TO_WATCH: List[str] = ["V. Wembanyama"]
 
 
 def parse_single_game_statline(stat_line: Optional[str]) -> Optional[ParsedStatline]:

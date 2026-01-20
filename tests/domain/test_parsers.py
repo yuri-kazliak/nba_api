@@ -63,7 +63,7 @@ def test_parse_single_game_statline_formats_players() -> None:
         build_player("B.Player7", 15, 4, 8, 3, 1),
         build_player("B.Player8", 21, 11, 9, 5, 5),
         build_player("B.Player9", 13, 7, 2, 2, 3),
-        build_player("C. Flagg", 8, 7, 4, 3, 1),
+        build_player("C. Flagg", 8, 7, 1, 1, 1),
     ]
 
     stat_line = json.dumps(
@@ -199,9 +199,6 @@ def test_parse_single_game_statline_formats_players() -> None:
         "C. Flagg": {
             "points": 8,
             "reboundsTotal": 7,
-            "assists": 4,
-            "steals": 3,
-            "blocks": 1,
         },
     }
 
