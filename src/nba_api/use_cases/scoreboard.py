@@ -1,6 +1,7 @@
 """Application use case for retrieving and aggregating scoreboard statistics."""
 
 import asyncio
+import random
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
@@ -8,11 +9,12 @@ from loguru import logger
 from ..domain.enums import NBA_GAME_STATUS
 from ..domain.parsers import (
     ParsedStatline,
+    normalize_scoreboard_payload,
     parse_scoreboard_game,
     parse_single_game_statline,
     parse_to_json,
 )
-from ..services import nba_client
+from ..services import stats_client
 
 
 def _normalize_game_status(status: Any) -> Optional[NBA_GAME_STATUS]:
@@ -44,12 +46,13 @@ def _normalize_game_status(status: Any) -> Optional[NBA_GAME_STATUS]:
 
 async def get_stats() -> Optional[Dict[str, Any]]:
     try:
-        scoreboard = await nba_client.get_todays_scoreboard()
+        scoreboard = await stats_client.get_todays_scoreboard()
 
         if "<HTML>" in scoreboard:
             return None
 
         formatted_scoreboards = parse_to_json(scoreboard)
+        formatted_scoreboards = normalize_scoreboard_payload(formatted_scoreboards)
 
         if not formatted_scoreboards:
             return None
@@ -65,10 +68,21 @@ async def get_stats() -> Optional[Dict[str, Any]]:
             in {NBA_GAME_STATUS.LIVE, NBA_GAME_STATUS.FINAL}
         ]
 
-        gatherers = [
-            nba_client.get_single_game_full_stats(game["gameId"]) for game in filtered_games
-        ]
-        games_full_stats = await asyncio.gather(*gatherers, return_exceptions=True)
+        games_full_stats: List[object] = []
+
+        for index, game in enumerate(filtered_games):
+            if index > 0:
+                delay_seconds: float = random.uniform(0.5, 1.25)
+                await asyncio.sleep(delay_seconds)
+
+            try:
+                stat_line = await stats_client.get_single_game_full_stats(
+                    game["gameId"]
+                )
+                games_full_stats.append(stat_line)
+            except Exception as fetch_err:  # noqa: BLE001
+                games_full_stats.append(fetch_err)
+
         parsed_game_full_stats: List[Optional[ParsedStatline]] = []
 
         for stat_line in games_full_stats:
@@ -77,7 +91,9 @@ async def get_stats() -> Optional[Dict[str, Any]]:
                 continue
 
             parsed_game_full_stats.append(
-                parse_single_game_statline(stat_line if isinstance(stat_line, str) else None)
+                parse_single_game_statline(
+                    stat_line if isinstance(stat_line, str) else None
+                )
             )
 
         combined_full_stats: List[Dict[str, Any]] = []

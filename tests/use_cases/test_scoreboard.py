@@ -30,7 +30,8 @@ async def test_get_stats_returns_combined_data(monkeypatch: pytest.MonkeyPatch) 
         return _scoreboard_payload([])
 
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_todays_scoreboard", fake_get_todays_scoreboard
+        "nba_api.services.stats_client.get_todays_scoreboard",
+        fake_get_todays_scoreboard,
     )
 
     result = await scoreboard.get_stats()
@@ -131,10 +132,11 @@ async def test_get_stats_filters_only_live_or_final(
         )
 
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_todays_scoreboard", fake_get_todays_scoreboard
+        "nba_api.services.stats_client.get_todays_scoreboard",
+        fake_get_todays_scoreboard,
     )
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_single_game_full_stats",
+        "nba_api.services.stats_client.get_single_game_full_stats",
         fake_get_single_game_full_stats,
     )
 
@@ -188,13 +190,17 @@ async def test_get_stats_handles_exception_from_gather(
     captured: List[str] = []
 
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_todays_scoreboard", fake_get_todays_scoreboard
+        "nba_api.services.stats_client.get_todays_scoreboard",
+        fake_get_todays_scoreboard,
     )
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_single_game_full_stats",
+        "nba_api.services.stats_client.get_single_game_full_stats",
         fake_get_single_game_full_stats,
     )
-    monkeypatch.setattr("nba_api.use_cases.scoreboard.logger.exception", fake_logger_exception)
+    monkeypatch.setattr(
+        "nba_api.use_cases.scoreboard.logger.exception",
+        fake_logger_exception,
+    )
 
     result = await scoreboard.get_stats()
 
@@ -238,14 +244,15 @@ async def test_get_stats_handles_null_statlines(
         )
 
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_todays_scoreboard", fake_get_todays_scoreboard
+        "nba_api.services.stats_client.get_todays_scoreboard",
+        fake_get_todays_scoreboard,
     )
 
     async def fake_get_single_game_full_stats(game_id: str) -> str:
         return json.dumps({})
 
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_single_game_full_stats",
+        "nba_api.services.stats_client.get_single_game_full_stats",
         fake_get_single_game_full_stats,
     )
     monkeypatch.setattr(
@@ -287,7 +294,8 @@ async def test_get_stats_returns_none_for_html_payload(
         return "<HTML>Error"
 
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_todays_scoreboard", fake_get_todays_scoreboard
+        "nba_api.services.stats_client.get_todays_scoreboard",
+        fake_get_todays_scoreboard,
     )
 
     result = await scoreboard.get_stats()
@@ -303,7 +311,7 @@ async def test_get_stats_handles_parsing_failure(
         return "{}"
 
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_todays_scoreboard", fake_get_todays_scoreboard
+        "nba_api.services.stats_client.get_todays_scoreboard", fake_get_todays_scoreboard
     )
 
     result = await scoreboard.get_stats()
@@ -322,7 +330,7 @@ async def test_get_stats_handles_exceptions(monkeypatch: pytest.MonkeyPatch) -> 
         captured.append(str(err))
 
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_todays_scoreboard", fake_get_todays_scoreboard
+        "nba_api.services.stats_client.get_todays_scoreboard", fake_get_todays_scoreboard
     )
     monkeypatch.setattr("nba_api.use_cases.scoreboard.logger.exception", fake_logger_exception)
 

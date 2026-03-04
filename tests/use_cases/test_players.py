@@ -24,7 +24,7 @@ async def test_get_players_stats_returns_parsed_payload(
         )
 
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_all_players_season_stats",
+        "nba_api.services.stats_client.get_all_players_season_stats",
         fake_get_all_players_season_stats,
     )
 
@@ -40,7 +40,7 @@ async def test_get_players_stats_returns_none_for_html(
         return "<HTML>Error"
 
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_all_players_season_stats",
+        "nba_api.services.stats_client.get_all_players_season_stats",
         fake_get_all_players_season_stats,
     )
 
@@ -56,7 +56,7 @@ async def test_get_players_stats_handles_parsing_failure(
         return "{}"
 
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_all_players_season_stats",
+        "nba_api.services.stats_client.get_all_players_season_stats",
         fake_get_all_players_season_stats,
     )
 
@@ -77,10 +77,13 @@ async def test_get_players_stats_logs_exception(
         captured.append(str(err))
 
     monkeypatch.setattr(
-        "nba_api.services.nba_client.get_all_players_season_stats",
+        "nba_api.services.stats_client.get_all_players_season_stats",
         fake_get_all_players_season_stats,
     )
-    monkeypatch.setattr("nba_api.use_cases.players.logger.exception", fake_logger_exception)
+    monkeypatch.setattr(
+        "nba_api.use_cases.players.logger.exception",
+        fake_logger_exception,
+    )
 
     stats = await players.get_players_stats()
 

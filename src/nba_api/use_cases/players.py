@@ -5,12 +5,12 @@ from typing import Any, Dict, Optional
 from loguru import logger
 
 from ..domain.parsers import parse_players_season_stats, parse_to_json
-from ..services import nba_client
+from ..services import stats_client
 
 
 async def get_players_stats() -> Optional[Dict[str, Any]]:
     try:
-        players_stats = await nba_client.get_all_players_season_stats()
+        players_stats = await stats_client.get_all_players_season_stats()
 
         if "<HTML>" in players_stats:
             return None
