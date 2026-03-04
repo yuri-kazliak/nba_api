@@ -68,7 +68,7 @@ async def get_stats() -> Optional[Dict[str, Any]]:
             in {NBA_GAME_STATUS.LIVE, NBA_GAME_STATUS.FINAL}
         ]
 
-        games_full_stats: List[object] = []
+        games_full_stats: List[Any] = []
 
         for index, game in enumerate(filtered_games):
             if index > 0:
