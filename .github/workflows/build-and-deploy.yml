@@ -23,8 +23,11 @@ jobs:
           python-version: "3.13"
           cache: "poetry"
 
-      - name: Install Poetry
-        run: pipx install poetry==1.8.3
+      - name: Set up Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.8.3"
+          virtualenvs-create: false
 
       - name: Install dependencies
         run: poetry install --no-interaction --no-ansi
