@@ -54,7 +54,7 @@ jobs:
       image_name: ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.CONTAINER_NAME }}:${{ github.ref_name }}
       docker_container_name: ${{ vars.CONTAINER_NAME }}
       do_host: ${{ vars.DO_HOST }}
-      do_username: root
+      do_username: ${{ vars.DOCKERHUB_USERNAME }}
       docker_port_mapping: 8018
     secrets:
       do_ssh_key: ${{ secrets.DO_SSHKEY }}
