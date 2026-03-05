@@ -32,13 +32,25 @@ def parse_single_game_statline(stat_line: Optional[str]) -> Optional[ParsedStatl
 
     game_id: Optional[str] = parsed_boxscore.get("gameId")
     if not game_id:
+        # ESPN summary payloads sometimes put the id under header
         header: Dict[str, Any] = parsed.get("header", {})  # ESPN summary fallback
         header_id: Any = header.get("id")
         if isinstance(header_id, str) and header_id:
             game_id = header_id
 
-    home_team_raw: Optional[Dict[str, Any]] = parsed_boxscore.get("homeTeam")
-    away_team_raw: Optional[Dict[str, Any]] = parsed_boxscore.get("awayTeam")
+    # identify format: NBA-style has explicit homeTeam/awayTeam keys, ESPN
+    # style embeds a list of teams and a separate list of player stat entries.
+    home_team_raw: Optional[Dict[str, Any]] = None
+    away_team_raw: Optional[Dict[str, Any]] = None
+
+    if "teams" in parsed_boxscore and isinstance(parsed_boxscore.get("teams"), list):
+        # convert the ESPN boxscore into the minimal shape expected by
+        # format_team_statline(); this includes a `players` list with the
+        # simplified statistic structure used by our unit tests.
+        home_team_raw, away_team_raw = _convert_espn_boxscore(parsed_boxscore)
+    else:
+        home_team_raw = parsed_boxscore.get("homeTeam")
+        away_team_raw = parsed_boxscore.get("awayTeam")
 
     if not game_id or not home_team_raw or not away_team_raw:
         return None
@@ -250,6 +262,100 @@ def normalize_scoreboard_payload(
             "leagueName": league_name,
         }
     }
+
+
+def _convert_espn_boxscore(
+    parsed_boxscore: Dict[str, Any],
+) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    """Turn an ESPN-style boxscore payload into two team dicts.
+
+    ESPN payloads place team-level stats under ``boxscore['teams']`` and
+    player-level information under ``boxscore['players']``.  Each entry in
+    ``players`` contains a nested ``statistics`` block that describes the
+    various columns (``keys``) and provides a list of ``athletes`` with
+    a parallel ``stats`` list.  We build a simplified version of the
+    structure consumed by :func:`format_team_statline` so that the existing
+    filtering/sorting logic can be reused.
+    """
+
+    teams: List[Dict[str, Any]] = parsed_boxscore.get("teams", []) or []
+    players_section: List[Dict[str, Any]] = parsed_boxscore.get("players", []) or []
+
+    # build mapping from team id to list of simplified player dicts
+    team_players: Dict[str, List[Dict[str, Any]]] = {}
+
+    def safe_int(value: Any) -> int:
+        try:
+            return int(value)
+        except Exception:  # noqa: BLE001
+            return 0
+
+    for entry in players_section:
+        team_info: Dict[str, Any] = entry.get("team", {}) or {}
+        team_id = str(team_info.get("id", ""))
+        stats_raw = entry.get("statistics", {}) or {}
+
+        # ESPN occasionally wraps the statistics block in a one-element list
+        # (see espn_single_game_example.py).  Normalize to a dict so the
+        # downstream code can treat it uniformly.
+        if isinstance(stats_raw, list):
+            stats_info = {}
+            for candidate in stats_raw:
+                if isinstance(candidate, dict) and "athletes" in candidate:
+                    stats_info = candidate
+                    break
+            if not stats_info and stats_raw:
+                stats_info = stats_raw[0]
+        else:
+            stats_info = stats_raw
+
+        keys: List[str] = stats_info.get("keys", []) or []
+        athletes: List[Dict[str, Any]] = stats_info.get("athletes", []) or []
+
+        for athlete in athletes:
+            # skip players who did not log any stats or were inactive
+            if athlete.get("didNotPlay") or not athlete.get("active"):
+                continue
+
+            athlete_info: Dict[str, Any] = athlete.get("athlete", {}) or {}
+            name = athlete_info.get("shortName") or athlete_info.get("displayName")
+            stats_list: List[Any] = athlete.get("stats", []) or []
+            stats_map: Dict[str, Any] = dict(zip(keys, stats_list))
+
+            # convert compatible numeric fields; only the fields that our
+            # existing tests/logic care about are extracted here.
+            player_dict: Dict[str, Any] = {
+                "status": "ACTIVE" if athlete.get("active") else "INACTIVE",
+                "nameI": name,
+                "statistics": {
+                    "points": safe_int(stats_map.get("points", 0)),
+                    "reboundsTotal": safe_int(stats_map.get("rebounds", 0)),
+                    "assists": safe_int(stats_map.get("assists", 0)),
+                    "steals": safe_int(stats_map.get("steals", 0)),
+                    "blocks": safe_int(stats_map.get("blocks", 0)),
+                },
+            }
+
+            team_players.setdefault(team_id, []).append(player_dict)
+
+    home_team: Optional[Dict[str, Any]] = None
+    away_team: Optional[Dict[str, Any]] = None
+
+    for team in teams:
+        team_entry_info: Dict[str, Any] = team.get("team", {}) or {}
+        team_id = str(team_entry_info.get("id", ""))
+        tricode = team_entry_info.get("abbreviation", "")
+        simple: Dict[str, Any] = {
+            "teamTricode": tricode,
+            "teamId": team_id,
+            "players": team_players.get(team_id, []),
+        }
+        if team.get("homeAway") == "home":
+            home_team = simple
+        elif team.get("homeAway") == "away":
+            away_team = simple
+
+    return home_team, away_team
 
 
 def get_team_logo_link(team_id: str) -> str:

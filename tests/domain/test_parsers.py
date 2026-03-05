@@ -215,6 +215,50 @@ def test_parse_single_game_statline_formats_players() -> None:
         assert away_players_parsed[name] == stats
 
 
+def test_parse_single_game_statline_handles_espn_example() -> None:
+    # load the real ESPN game payload that lives in the repository
+    import pathlib
+
+    path = (
+        pathlib.Path(__file__).parent.parent.parent
+        / "data-examples"
+        / "espn_single_game_example.json"
+    )
+    raw = path.read_text()
+    payload = json.loads(raw)
+    result = parsers.parse_single_game_statline(json.dumps(payload))
+
+    assert result is not None
+    # make sure we still return the same high‑level keys
+    assert "homeTeam" in result and "awayTeam" in result
+
+    # verify that a few well‑known players from the sample are present and
+    # that their numeric statistics were pulled correctly.
+    home_names = {p["name"] for p in result["homeTeam"]["players"]}
+    away_names = {p["name"] for p in result["awayTeam"]["players"]}
+
+    # Chet Holmgren played for the Thunder (away team) and scored 28 points
+    assert "C. Holmgren" in away_names
+    holmgren = next(
+        p for p in result["awayTeam"]["players"] if p["name"] == "C. Holmgren"
+    )
+    assert holmgren["points"] == 28
+    assert holmgren["reboundsTotal"] == 8
+    # assists were below the inclusion threshold so might be absent
+    if "assists" in holmgren:
+        assert holmgren["assists"] == 2
+
+    # Jalen Brunson is on the Knicks (home team) with 16 points & 15 assists
+    assert "J. Brunson" in home_names
+    brunson = next(
+        p for p in result["homeTeam"]["players"] if p["name"] == "J. Brunson"
+    )
+    assert brunson["points"] == 16
+    # rebounds fell below the threshold and may not be present
+    assert "reboundsTotal" not in brunson or brunson["reboundsTotal"] == 3
+    assert brunson["assists"] == 15
+
+
 def test_parse_single_game_statline_returns_none_for_missing_boxscore() -> None:
     assert parsers.parse_single_game_statline(json.dumps({})) is None
 

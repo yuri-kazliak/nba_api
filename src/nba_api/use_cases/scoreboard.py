@@ -96,6 +96,8 @@ async def get_stats() -> Optional[Dict[str, Any]]:
                 )
             )
 
+        # print(f"parsed_game_full_stats: {parsed_game_full_stats}")
+
         combined_full_stats: List[Dict[str, Any]] = []
 
         for game in games:
@@ -112,6 +114,8 @@ async def get_stats() -> Optional[Dict[str, Any]]:
                 {},
             )
 
+            # print(f"game_to_merge: {game_to_merge}")
+
             if "homeTeam" in game_to_merge:
                 game["homeTeam"]["players"] = game_to_merge["homeTeam"]["players"]
                 game["awayTeam"]["players"] = game_to_merge["awayTeam"]["players"]
@@ -120,6 +124,8 @@ async def get_stats() -> Optional[Dict[str, Any]]:
                 game["awayTeam"]["players"] = []
 
             combined_full_stats.append(game)
+
+        # print(f"combined_full_stats: {combined_full_stats}")
 
         return {
             "Game Date": formatted_scoreboards["scoreboard"]["gameDate"],

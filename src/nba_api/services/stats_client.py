@@ -55,4 +55,3 @@ async def get_specific_gameday_stats(gamedate: str) -> str:
         return await espn_client.get_specific_gameday_stats(gamedate)
 
     return await nba_client.get_specific_gameday_stats(gamedate)
-
