@@ -5,7 +5,7 @@ permissions:
 
 on:
   release:
-    types: ["published"]
+    types: [published]
 
 concurrency:
   group: production-deploy
@@ -18,10 +18,8 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     steps:
-      - uses: actions/checkout@v4.2.2
-
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
@@ -44,28 +42,22 @@ jobs:
 
   dockerhub-push:
     needs: tests
-    timeout-minutes: 15
     uses: yuri-kazliak/automation/.github/workflows/docker-hub-push.yml@main
-
     with:
       image_name: ${{ env.IMAGE_NAME }}
       dockerhub_username: ${{ vars.DOCKERHUB_USERNAME }}
-
     secrets:
       dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
 
   do-deploy:
     needs: dockerhub-push
-    timeout-minutes: 10
     uses: yuri-kazliak/automation/.github/workflows/digital-ocean-deploy.yml@main
-
     with:
       image_name: ${{ env.IMAGE_NAME }}
-      image_digest: ${{ needs.dockerhub-push.outputs.image_digest }}
+      image_digest: ${{ needs.dockerhub-push.outputs.image_digest }} # immutable deploy
       docker_container_name: ${{ vars.CONTAINER_NAME }}
       do_host: ${{ vars.DO_HOST }}
       do_username: root
       docker_port_mapping: 8018
-
     secrets:
       do_ssh_key: ${{ secrets.DO_SSHKEY }}
