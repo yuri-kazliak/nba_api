@@ -4,8 +4,6 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from loguru import logger
-
 from ..domain.enums import NBA_GAME_STATUS
 from ..use_cases import players as players_use_case
 from ..use_cases import scoreboard as scoreboard_use_case
@@ -47,7 +45,6 @@ def get_all_players_stats_timestamp() -> Optional[datetime]:
 
 async def refresh_boxscore() -> None:
     stats = await scoreboard_use_case.get_stats()
-    logger.info("stats: {}", stats)
     set_todays_boxscore(stats)
 
 

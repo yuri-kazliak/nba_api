@@ -314,7 +314,7 @@ def _convert_espn_boxscore(
 
         for athlete in athletes:
             # skip players who did not log any stats or were inactive
-            if athlete.get("didNotPlay") or not athlete.get("active"):
+            if athlete.get("didNotPlay"):
                 continue
 
             athlete_info: Dict[str, Any] = athlete.get("athlete", {}) or {}
@@ -325,7 +325,7 @@ def _convert_espn_boxscore(
             # convert compatible numeric fields; only the fields that our
             # existing tests/logic care about are extracted here.
             player_dict: Dict[str, Any] = {
-                "status": "ACTIVE" if athlete.get("active") else "INACTIVE",
+                "status": "ACTIVE" if not athlete.get("didNotPlay") else "INACTIVE",
                 "nameI": name,
                 "statistics": {
                     "points": safe_int(stats_map.get("points", 0)),
